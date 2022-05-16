@@ -1,0 +1,3 @@
+C:/Users/orff1/CLionProjects/SysPro_5/cmake-build-debug/CMakeFiles/SysPro_5.dir
+C:/Users/orff1/CLionProjects/SysPro_5/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/orff1/CLionProjects/SysPro_5/cmake-build-debug/CMakeFiles/rebuild_cache.dir
