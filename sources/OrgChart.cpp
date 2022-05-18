@@ -16,13 +16,27 @@ OrgChart::iterator *OrgChart::end_level_order() {
 }
 
 OrgChart &OrgChart::add_root(const string &str) {
-    OrgChart* o= new OrgChart;
-    return *o;
+    string s= str;
+    node* ptr = new node(s, nullptr);
+    if(!ptr) throw std::invalid_argument("cant allocate memory");
+
+    if (root == nullptr){
+        root=ptr;
+    } else{
+        root->setDad(ptr);
+        root=ptr;
+    }
+    return *this;
+}
+
+node* OrgChart::find(const string &str) {
+    return root;
 }
 
 OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
-    OrgChart* o= new OrgChart;
-    return *o;
+    if (root== nullptr) throw std::invalid_argument("there is no root");
+
+    return *this;
 }
 
 ostream &ariel::operator<<(ostream &os, const OrgChart &m) {
@@ -58,7 +72,6 @@ OrgChart::iterator OrgChart::end() {
 ostream &ariel::operator<<(ostream &os, const OrgChart::iterator &m) {
     return std::operator<<(os, "");
 }
-
 
 OrgChart::iterator &OrgChart::iterator::operator++() {
      OrgPtr++;

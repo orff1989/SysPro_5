@@ -76,9 +76,9 @@ TEST_CASE("Good input") {
                           .add_sub("CEO", "s2"));
 
     for (auto element : org2){
-                CHECK_NOTHROW(out<< element<<" ");
+        CHECK_NOTHROW(out<< element<<" ");
     }
-            CHECK(out.str()=="CEO s1 s2 ");
+    CHECK(out.str()=="CEO s1 s2 ");
     out.str("");
 
     CHECK_NOTHROW(org2.add_sub("CEO","s3")
@@ -88,7 +88,7 @@ TEST_CASE("Good input") {
     for (auto element : org2){
                 CHECK_NOTHROW(out<< element<<" ");
     }
-            CHECK(out.str()=="CEO s1 s2 s3 s1Child s2Child ");
+    CHECK(out.str()=="CEO s1 s2 s3 s1Child s2Child ");
     out.str("");
 
     CHECK_NOTHROW(org2.add_sub("CEO","s4"));
@@ -99,9 +99,7 @@ TEST_CASE("Good input") {
     CHECK_NOTHROW(org1.add_root("a"));
     CHECK_NOTHROW(org1.add_root("b"));
     CHECK_NOTHROW(org1.add_root("c"));
-
 }
-
 
 TEST_CASE("bad input") {
     OrgChart org1;
