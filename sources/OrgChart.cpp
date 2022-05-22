@@ -15,18 +15,20 @@ OrgChart &OrgChart::add_root(const string &str) {
 
 OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
     Node* d = findNode(str1);
+
     if(d== nullptr){std::invalid_argument("cant find this dad");}
 
     Node* n = new Node(str2,d);
-
     if(d->lChild!= nullptr){
+
+
         d=d->lChild;
         while (d->right!= nullptr){d=d->right;}
         d->right=n;
         n->left=d;
 
     } else{
-        d->lChild=n;
+            d->lChild = n;
     }
     return *this;
 }
@@ -35,10 +37,10 @@ OrgChart::Node* OrgChart::findNode(const string &basicString) {
     iterator it(root);
 
     do{
-        if(it.getOrgPtr()->name==basicString){
+        if(it.getOrgPtr() && it.getOrgPtr()->name==basicString){
             return it.getOrgPtr();
         }
-        ++it;
+        it++;
     }
     while (it.hasNext());
 
@@ -117,7 +119,7 @@ ostream &ariel::operator<<(ostream &os, const OrgChart::iterator &m) {
 }
 
 bool OrgChart::iterator::hasNext() {
-    return orgPtr->lChild!= nullptr || orgPtr->right!= nullptr || hasRCousing() || hasLNephew();
+    return orgPtr->lChild!= nullptr || orgPtr->right!= nullptr || hasRCousing() || hasLNephew() || hasSonOfCousing();
 }
 
 OrgChart::Node *OrgChart::iterator::getOrgPtr() const {
@@ -192,6 +194,7 @@ const OrgChart::iterator OrgChart::iterator::operator++() {
         }
         else if (getNextCousing()){return t;}
         else if(getNextNephew()) {return t;}
+        else if(sonOfLCousing()){return *this;}
         else if(orgPtr->lChild){
             this->orgPtr=orgPtr->lChild;
             return t;
@@ -211,6 +214,7 @@ OrgChart::iterator OrgChart::iterator::operator++(int) {
         }
         else if (getNextCousing()){return *this;}
         else if(getNextNephew()) {return *this;}
+        else if(sonOfLCousing()){return *this;}
         else if(orgPtr->lChild){
             this->orgPtr=orgPtr->lChild;
             return *this;
@@ -233,6 +237,36 @@ bool OrgChart::iterator::operator!=(const OrgChart::iterator &rhs) const {
 
 string *OrgChart::iterator::operator->() const {
     return &(orgPtr->name);
+}
+
+bool OrgChart::iterator::sonOfLCousing() {
+    if (orgPtr && orgPtr->dad && orgPtr->dad->dad && orgPtr->dad->dad->lChild && orgPtr->dad->dad->lChild->lChild) {
+        Node *n = orgPtr->dad->dad->lChild->lChild;
+
+        while (n && n->lChild == nullptr) {
+            n = n->right;
+        }
+        if (n && n->lChild) {
+            orgPtr = n->lChild;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool OrgChart::iterator::hasSonOfCousing() {
+    if (this->orgPtr == nullptr) { return false; }
+    if (orgPtr->dad && orgPtr->dad->dad && orgPtr->dad->dad->lChild && orgPtr->dad->dad->lChild->lChild) {
+        Node *n = orgPtr->dad->dad->lChild->lChild;
+
+        while (n && n->lChild == nullptr) {
+            n = n->right;
+        }
+        if (n && n->lChild) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /////////////////// REVERSE ITERATOR ///////////////////

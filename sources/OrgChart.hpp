@@ -1,18 +1,10 @@
 #pragma once
-/**
- * A template stack class.
- * Implemented as a linked list.
- *
- * AUTHOR: Ofir Pele
- * SINCE : 2017
- */
+
 #include "string"
 #include <stdexcept>
 #include <iostream>
 
 using namespace std;
-
-
 
 namespace ariel {
 
@@ -23,11 +15,11 @@ namespace ariel {
         OrgChart() : root(nullptr) {
         }
 
-        ~OrgChart() {
-            for (auto it = this->begin_level_order(); it != this->end_level_order(); ++it) {
-                free(it.getOrgPtr());
-            }
-        }
+//        ~OrgChart() {
+////            for (auto it = this->begin_level_order(); it != this->end_level_order(); ++it) {
+////                free(it.getOrgPtr());
+////            }
+//        }
 
     private:
 
@@ -88,6 +80,9 @@ namespace ariel {
 
             string* operator->() const;
 
+            bool sonOfLCousing();
+
+            bool hasSonOfCousing();
         };
 
         class reverse_iterator {
@@ -160,7 +155,7 @@ namespace ariel {
 
         };
 
-
+    public:
         OrgChart &add_root(const string &str);
 
         OrgChart &add_sub(const string &str1, const string &str2);
