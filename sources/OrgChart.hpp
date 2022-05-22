@@ -41,6 +41,9 @@ namespace ariel {
             Node(const string &v, Node *d = nullptr, Node *lch = nullptr, Node *r = nullptr, Node *l = nullptr)
                     : name(v), lChild(lch), right(r), left(l), dad(d) {
             }
+
+            Node* getNextLCousing();
+
         };
 
         Node *root;
@@ -83,12 +86,79 @@ namespace ariel {
 
             friend ostream &operator<<(ostream &os, const iterator &m);
 
+            string* operator->() const;
+
         };
 
         class reverse_iterator {
+        private:
+            Node *orgPtr;
+
+        public:
+
+            reverse_iterator(Node *ptr = nullptr)
+            : orgPtr(ptr) {
+            }
+
+            Node *getOrgPtr();
+
+            string &operator*() const;
+
+            Node *leftBro(Node *pNode);
+
+            bool hasNext();
+
+            bool hasRCousing();
+
+            bool getNextRCousing();
+
+            const reverse_iterator operator++();
+
+            const reverse_iterator operator++(int);
+
+            bool operator==(const reverse_iterator &rhs) const;
+
+            bool operator!=(const reverse_iterator &rhs) const;
+
+            friend ostream &operator<<(ostream &os, const reverse_iterator &m);
+
+            string* operator->() const;
 
         };
 
+        class preorder_iterator {
+        private:
+            Node *orgPtr;
+
+        public:
+
+            preorder_iterator(Node *ptr = nullptr)
+                    : orgPtr(ptr) {
+            }
+
+            Node *getOrgPtr();
+
+            string &operator*() const;
+
+            bool hasNext();
+
+            bool hasRUncle();
+
+            bool getNextRUncle();
+
+            const preorder_iterator operator++();
+
+            const preorder_iterator operator++(int);
+
+            bool operator==(const preorder_iterator &rhs) const;
+
+            bool operator!=(const preorder_iterator &rhs) const;
+
+            friend ostream &operator<<(ostream &os, const preorder_iterator &m);
+
+            string* operator->() const;
+
+        };
 
 
         OrgChart &add_root(const string &str);
@@ -107,14 +177,15 @@ namespace ariel {
 
         iterator end();
 
-        iterator *begin_reverse_order();
+        reverse_iterator begin_reverse_order();
 
-        iterator *end_reverse_order();
+        reverse_iterator end_reverse_order();
 
-        iterator *begin_preorder();
+        const reverse_iterator reverse_order();
 
-        iterator *end_preorder();
+        preorder_iterator begin_preorder();
 
+        preorder_iterator end_preorder();
 
 
     };
