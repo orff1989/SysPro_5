@@ -94,7 +94,7 @@ namespace ariel {
                         return t;
                     }
                     else{
-//                        orgPtr= nullptr;
+                        orgPtr= nullptr;
                         return t;
                     }
                 }
@@ -115,7 +115,7 @@ namespace ariel {
                         return *this;
                     }
                     else{
-
+                        orgPtr= nullptr;
                         return *this;
                     }
                 }

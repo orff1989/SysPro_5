@@ -30,12 +30,18 @@ OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
     Node* n = new Node(str2,d);
 
     if(d->lChild!= nullptr){
+        d=d->lChild;
         while (d->right!= nullptr){d=d->right;}
         d->right=n;
         n->left=d;
+
     } else{
         d->lChild=n;
     }
+//    cout<<"add sub: ==========="<<endl;
+//    cout<<"adding node: "<< n->name << "dad: "<< n->dad<<endl;
+//    cout<<"dad details: "<< d
+
     return *this;
 }
 
@@ -176,7 +182,7 @@ bool OrgChart::iterator::getNextNephew() {
     if(this->orgPtr== nullptr || orgPtr->left== nullptr) return false;
 
     Node *ll = leftBro(this->orgPtr);
-    while (ll && ll->lChild == nullptr) { ll = ll->right; }
+    while (ll && ll!=orgPtr && ll->lChild == nullptr) { ll = ll->right; }
     if (ll->lChild!= nullptr) {
         orgPtr=ll->lChild;
         return true;
@@ -188,7 +194,7 @@ bool OrgChart::iterator::hasLNephew() {
     if(this->orgPtr== nullptr || orgPtr->left== nullptr) return false;
 
     Node *ll = leftBro(this->orgPtr);
-    while (ll && ll->lChild == nullptr) { ll = ll->right; }
+    while (ll && ll!=orgPtr && ll->lChild == nullptr) { ll = ll->right; }
     if (ll->lChild!= nullptr) {
         return true;
     }
