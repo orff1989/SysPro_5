@@ -6,22 +6,12 @@
 
 using namespace ariel;
 
-
-OrgChart::iterator OrgChart::begin_level_order() {
-    return iterator{root};
-}
-
-OrgChart::iterator OrgChart::end_level_order() {
-    return OrgChart::iterator(nullptr);
-}
-
+////////// ORGCHART /////////////
 
 OrgChart &OrgChart::add_root(const string &str) {
     this->root= new Node(str, nullptr, this->root);
     return *this;
 }
-
-
 
 OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
     Node* d = findNode(str1);
@@ -38,10 +28,6 @@ OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
     } else{
         d->lChild=n;
     }
-//    cout<<"add sub: ==========="<<endl;
-//    cout<<"adding node: "<< n->name << "dad: "<< n->dad<<endl;
-//    cout<<"dad details: "<< d
-
     return *this;
 }
 
@@ -62,54 +48,6 @@ OrgChart::Node* OrgChart::findNode(const string &basicString) {
     return nullptr;
 }
 
-
-//OrgChart::iterator *OrgChart::begin_reverse_order() {
-//    return nullptr;
-//}
-//
-//OrgChart::iterator *OrgChart::end_reverse_order() {
-//    return nullptr;
-//}
-//
-//OrgChart::iterator *OrgChart::begin_preorder() {
-//    return nullptr;
-//}
-//
-//OrgChart::iterator *OrgChart::end_preorder() {
-//    return nullptr;
-//}
-//
-//OrgChart::iterator OrgChart::begin() {
-//    return OrgChart::iterator(this);
-//}
-//
-//OrgChart::iterator OrgChart::end() {
-//    OrgChart::iterator it = begin();
-//    while (it.hasNext()){ it.next();}
-//    return it;
-//}
-//
-/////////////////// ITERATOR ///////////
-//
-//
-//
-//OrgChart::iterator OrgChart::iterator::next() {
-//    if (org != nullptr && hasNext()) {
-//        if(org->_right) {
-//            this->org = org->_right;
-//        } else{
-//            this->org=org->_lChild;
-//        }
-//        return *this;
-//    }
-//    else{
-//        throw std::invalid_argument("there are no more values");}
-//}
-
-ostream &ariel::operator<<(ostream &os, const OrgChart::iterator &m) {
-    return  std::operator<<(os, m.getOrgPtr()->name);
-}
-
 ostream &ariel::operator<<(ostream &os, const OrgChart &m) {
     string s;
     string space="                       ";
@@ -118,7 +56,7 @@ ostream &ariel::operator<<(ostream &os, const OrgChart &m) {
     s+=space+it.getOrgPtr()->name;
     while(i>1) {
         s+="\n"+space.substr(0,space.size()-2);
-    i=0;
+        i=0;
         while (it.hasNext()) {
             s += it.getOrgPtr()->right->name;
             if (it.getOrgPtr()->lChild) i=1;
@@ -129,6 +67,36 @@ ostream &ariel::operator<<(ostream &os, const OrgChart &m) {
     return  std::operator<<(os, s);
 }
 
+OrgChart::iterator OrgChart::begin_level_order() {
+    return iterator{root};
+}
+
+OrgChart::iterator OrgChart::end_level_order() {
+    return OrgChart::iterator(nullptr);
+}
+
+OrgChart::iterator OrgChart::begin() {
+    return begin_level_order();
+}
+
+OrgChart::iterator OrgChart::end() {
+    return end_level_order();
+}
+
+OrgChart::iterator *OrgChart::begin_reverse_order() {
+    return nullptr;
+}
+
+OrgChart::iterator *OrgChart::end_reverse_order() {
+    return nullptr;
+}
+
+/////////////////// ITERATOR ///////////////////
+
+ostream &ariel::operator<<(ostream &os, const OrgChart::iterator &m) {
+    return  std::operator<<(os, m.getOrgPtr()->name);
+}
+
 bool OrgChart::iterator::hasNext() {
     return orgPtr->lChild!= nullptr || orgPtr->right!= nullptr || hasRCousing() || hasLNephew();
 }
@@ -137,17 +105,11 @@ OrgChart::Node *OrgChart::iterator::getOrgPtr() const {
     return orgPtr;
 }
 
-void OrgChart::iterator::setOrgPtr(OrgChart::Node *orgPtr) {
-    iterator::orgPtr = orgPtr;
-}
-
 OrgChart::Node *OrgChart::iterator::leftBro(OrgChart::Node *pNode) {
     Node *ptr=pNode;
     while(ptr->left) {ptr=ptr->left;}
     return ptr;
 }
-
-
 
 bool OrgChart::iterator::getNextCousing() {
     if( orgPtr== nullptr || orgPtr->dad== nullptr) return false;
@@ -177,7 +139,6 @@ bool OrgChart::iterator::hasRCousing() {
     return false;
 }
 
-
 bool OrgChart::iterator::getNextNephew() {
     if(this->orgPtr== nullptr || orgPtr->left== nullptr) return false;
 
@@ -201,39 +162,55 @@ bool OrgChart::iterator::hasLNephew() {
     return false;
 }
 
+string &OrgChart::iterator::operator*() const {
+    return orgPtr->name;
+}
+
+const OrgChart::iterator OrgChart::iterator::operator++() {
+    iterator t = *this;
+    if (orgPtr != nullptr) {
+        if (orgPtr->right) {
+            this->orgPtr = orgPtr->right;
+        }
+        else if (getNextCousing()){return t;}
+        else if(getNextNephew()) {return t;}
+        else if(orgPtr->lChild){
+            this->orgPtr=orgPtr->lChild;
+            return t;
+        }
+        else{
+            orgPtr= nullptr;
+            return t;
+        }
+    }
+    return t;
+}
+
+OrgChart::iterator OrgChart::iterator::operator++(int) {
+    if (orgPtr != nullptr) {
+        if (orgPtr->right) {
+            this->orgPtr = orgPtr->right;
+        }
+        else if (getNextCousing()){return *this;}
+        else if(getNextNephew()) {return *this;}
+        else if(orgPtr->lChild){
+            this->orgPtr=orgPtr->lChild;
+            return *this;
+        }
+        else{
+            orgPtr= nullptr;
+            return *this;
+        }
+    }
+    return *this;
+}
+
+bool OrgChart::iterator::operator==(const OrgChart::iterator &rhs) const {
+    return orgPtr == rhs.orgPtr;
+}
+
+bool OrgChart::iterator::operator!=(const OrgChart::iterator &rhs) const {
+    return orgPtr != rhs.orgPtr;
+}
 
 
-
-
-
-////OrgChart::iterator OrgChart::iterator::operator++(int) {
-////    cout<<"in ++ int"<<endl;
-////    return next();
-////}
-////
-////OrgChart::iterator OrgChart::iterator::operator++() {
-////    cout<<"in ++"<<endl;
-////    return next();
-////}
-//
-//OrgChart::iterator OrgChart::iterator::operator*() {
-//    return *this;
-//}
-//
-//bool OrgChart::iterator::operator!=(const OrgChart::iterator &rhs) {
-//    return this->org==rhs.org;
-//}
-//
-//ostream &ariel::operator<<(ostream &os, const OrgChart::iterator &m) {
-//    return std::operator<<(os, m.org->getName());
-//}
-//
-//OrgChart *OrgChart::iterator::getOrg(){
-//    return org;
-//}
-//
-//
-//const string &OrgChart::getName() const {
-//    return _name;
-//}
-//
