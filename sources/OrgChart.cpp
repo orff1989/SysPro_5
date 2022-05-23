@@ -14,9 +14,9 @@ OrgChart &OrgChart::add_root(const string &str) {
 }
 
 OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
+    if (root== nullptr) { throw std::invalid_argument("the root is null");}
     Node* d = findNode(str1);
-
-    if(d== nullptr){std::invalid_argument("cant find this dad");}
+    if(d== nullptr){ throw std::invalid_argument("cant find this dad");}
 
     Node* n = new Node(str2,d);
     if(d->lChild!= nullptr){
@@ -34,6 +34,7 @@ OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
 }
 
 OrgChart::Node* OrgChart::findNode(const string &basicString) {
+    if (root== nullptr) { throw std::invalid_argument("root is null");}
     iterator it(root);
 
     do{
@@ -400,10 +401,40 @@ string &OrgChart::preorder_iterator::operator*() const {
 }
 
 bool OrgChart::preorder_iterator::hasNext() {
-    return orgPtr->lChild || orgPtr->right || hasRUncle();
+    return this->orgPtr->lChild || orgPtr->right || hasRUncle();
 }
 
 const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++() {
+    preorder_iterator t= *this;
+    if (orgPtr != nullptr) {
+        if (orgPtr->lChild) {
+            this->orgPtr = orgPtr->lChild;
+            return t;
+        } else if(orgPtr->right){
+            orgPtr=orgPtr->right;
+            return t;
+        }
+        else if (getNextRUncle()) { return t; }
+        else{
+         Node* d= orgPtr->dad;
+
+            while (d && d->dad){
+                if(d->dad->right ){
+                    orgPtr=d->dad->right;
+                    return *this;
+                }
+                d=d->dad;
+            }
+            this->orgPtr= nullptr;
+            return t;
+        }
+        }
+    this->orgPtr= nullptr;
+    return t;
+    }
+
+
+const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++(int) {
     if (orgPtr != nullptr) {
         if (orgPtr->lChild) {
             this->orgPtr = orgPtr->lChild;
@@ -414,28 +445,17 @@ const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++() {
         }
         else if (getNextRUncle()) { return *this; }
         else{
-            this->orgPtr= nullptr;
-            return *this;
-        }
-    }
-    this->orgPtr= nullptr;
-    return *this;
-}
+            Node* d= orgPtr->dad;
 
-const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++(int) {
-    if (orgPtr != nullptr) {
-        preorder_iterator t=*this;
-        if (orgPtr->lChild) {
-            this->orgPtr = orgPtr->lChild;
-            return t;
-        } else if(orgPtr->right){
-            orgPtr=orgPtr->right;
-            return *this;
-        }
-        else if (getNextRUncle()) { return t; }
-        else{
+            while (d && d->dad){
+                if(d->dad->right ){
+                    orgPtr=d->dad->right;
+                    return *this;
+                }
+                d=d->dad;
+            }
             this->orgPtr= nullptr;
-            return t;
+            return *this;
         }
     }
     this->orgPtr= nullptr;

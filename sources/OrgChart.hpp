@@ -3,6 +3,7 @@
 #include "string"
 #include <stdexcept>
 #include <iostream>
+#include "vector"
 
 using namespace std;
 
@@ -12,8 +13,7 @@ namespace ariel {
     class OrgChart {
     public:
 
-        OrgChart() : root(nullptr) {
-        }
+        OrgChart() : root(nullptr) { }
 
 //        ~OrgChart() {
 ////            for (auto it = this->begin_level_order(); it != this->end_level_order(); ++it) {
@@ -127,8 +127,8 @@ namespace ariel {
 
         public:
 
-            preorder_iterator(Node *ptr = nullptr)
-                    : orgPtr(ptr) {
+            preorder_iterator(Node* ptr= nullptr) {
+                orgPtr = ptr;
             }
 
             Node *getOrgPtr();
