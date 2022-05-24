@@ -15,11 +15,17 @@ namespace ariel {
 
         OrgChart() : root(nullptr) { }
 
-//        ~OrgChart() {
-////            for (auto it = this->begin_level_order(); it != this->end_level_order(); ++it) {
-////                free(it.getOrgPtr());
-////            }
-//        }
+        ~OrgChart() {
+            vector<Node*> v;
+            if (root!= nullptr) {
+                for (auto it = this->begin_preorder(); it != this->end_preorder(); ++it) {
+                    v.push_back(it.getOrgPtr());
+                }
+                for (size_t i = 0; i < v.size(); i++) {
+                    free(v.at(i));
+                }
+            }
+        }
 
     private:
 
@@ -36,6 +42,17 @@ namespace ariel {
 
             Node* getNextLCousing();
 
+            Node* getNextSonOfRCousing() const;
+
+            size_t hight() const;
+
+            bool isLeftFrom(Node* n);
+
+            Node *commadAnccestor(Node *pNode);
+
+            bool isAnccesor(Node *pNode);
+
+            bool lefBroOf(Node *pNode);
         };
 
         Node *root;
@@ -56,7 +73,7 @@ namespace ariel {
 
             string &operator*() const;
 
-            Node *leftBro(Node *pNode);
+            static Node *leftBro(Node *pNode);
 
             bool hasNext();
 
@@ -68,7 +85,7 @@ namespace ariel {
 
             bool getNextNephew();
 
-            const iterator operator++();
+            iterator operator++();
 
             iterator operator++(int);
 
@@ -83,6 +100,10 @@ namespace ariel {
             bool sonOfLCousing();
 
             bool hasSonOfCousing();
+
+            bool sonOfDadRCousing();
+
+            bool hassonOfDadRCousing();
         };
 
         class reverse_iterator {
@@ -107,9 +128,9 @@ namespace ariel {
 
             bool getNextRCousing();
 
-            const reverse_iterator operator++();
+            reverse_iterator operator++();
 
-            const reverse_iterator operator++(int);
+            reverse_iterator operator++(int);
 
             bool operator==(const reverse_iterator &rhs) const;
 
@@ -119,6 +140,9 @@ namespace ariel {
 
             string* operator->() const;
 
+            bool getNextRGrandpaGrandson();
+
+            bool hasNextRGrandpaGrandson();
         };
 
         class preorder_iterator {
@@ -141,9 +165,9 @@ namespace ariel {
 
             bool getNextRUncle();
 
-            const preorder_iterator operator++();
+            preorder_iterator operator++();
 
-            const preorder_iterator operator++(int);
+            preorder_iterator operator++(int);
 
             bool operator==(const preorder_iterator &rhs) const;
 
@@ -176,7 +200,7 @@ namespace ariel {
 
         reverse_iterator end_reverse_order();
 
-        const reverse_iterator reverse_order();
+        reverse_iterator reverse_order();
 
         preorder_iterator begin_preorder();
 

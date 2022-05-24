@@ -9,21 +9,26 @@ using namespace ariel;
 ////////// ORGCHART /////////////
 
 OrgChart &OrgChart::add_root(const string &str) {
-    this->root= new Node(str, nullptr, this->root);
+    if(root==nullptr) {
+        this->root = new Node(str);
+    }
+    else{
+        root->name=str;
+    }
     return *this;
 }
 
 OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
     if (root== nullptr) { throw std::invalid_argument("the root is null");}
+
     Node* d = findNode(str1);
     if(d== nullptr){ throw std::invalid_argument("cant find this dad");}
 
     Node* n = new Node(str2,d);
     if(d->lChild!= nullptr){
 
-
         d=d->lChild;
-        while (d->right!= nullptr){d=d->right;}
+        while (d!= nullptr && d->right!= nullptr){d=d->right;}
         d->right=n;
         n->left=d;
 
@@ -35,18 +40,13 @@ OrgChart &OrgChart::add_sub(const string &str1, const string &str2) {
 
 OrgChart::Node* OrgChart::findNode(const string &basicString) {
     if (root== nullptr) { throw std::invalid_argument("root is null");}
-    iterator it(root);
 
-    do{
-        if(it.getOrgPtr() && it.getOrgPtr()->name==basicString){
+    for (auto it = this->begin_level_order(); it != this->end_level_order(); ++it)
+  {
+      if(it.getOrgPtr()!= nullptr && it.getOrgPtr()->name==basicString){
             return it.getOrgPtr();
         }
-        it++;
-    }
-    while (it.hasNext());
-
-    if(it.getOrgPtr() && it.getOrgPtr()->name==basicString){ return it.getOrgPtr();}
-
+  }
     return nullptr;
 }
 
@@ -61,7 +61,7 @@ ostream &ariel::operator<<(ostream &os, const OrgChart &m) {
         i=0;
         while (it.hasNext()) {
             s += it.getOrgPtr()->right->name;
-            if (it.getOrgPtr()->lChild) i=1;
+            if (it.getOrgPtr()->lChild!= nullptr) {i=1;}
             it.hasNext();
         }
 
@@ -70,11 +70,13 @@ ostream &ariel::operator<<(ostream &os, const OrgChart &m) {
 }
 
 OrgChart::iterator OrgChart::begin_level_order() {
+    if (root== nullptr){ throw std::invalid_argument("the root is null");}
     return iterator{root};
 }
 
 OrgChart::iterator OrgChart::end_level_order() {
-    return OrgChart::iterator(nullptr);
+    if (root== nullptr){ throw std::invalid_argument("the root is null");}
+    return {nullptr};
 }
 
 OrgChart::iterator OrgChart::begin() {
@@ -86,31 +88,34 @@ OrgChart::iterator OrgChart::end() {
 }
 
 OrgChart::reverse_iterator OrgChart::begin_reverse_order() {
-    iterator it(this->root);
-    while (it.hasNext()) {++it;}
+    if (root== nullptr){ throw std::invalid_argument("the root is null");}
 
-    Node *n= it.getOrgPtr();
-    while(n->left){n=n->left;}
+    Node * farest_from_root=root;
 
-    n=n->getNextLCousing();
+    for (auto it = begin_preorder(); it!=end_preorder() ; ++it) {
+        if(it.getOrgPtr()->hight()>farest_from_root->hight()){ farest_from_root=it.getOrgPtr();}
+    }
 
-    return reverse_iterator{n};
+    return reverse_iterator{farest_from_root};
 }
 
 OrgChart::reverse_iterator OrgChart::end_reverse_order() {
+    if (root== nullptr){ throw std::invalid_argument("the root is null");}
     return reverse_iterator{nullptr};
 }
 
-const OrgChart::reverse_iterator OrgChart::reverse_order() {
+ OrgChart::reverse_iterator OrgChart::reverse_order() {
     return end_reverse_order();
 }
 
 OrgChart::preorder_iterator OrgChart::begin_preorder() {
-    return OrgChart::preorder_iterator(root);
+    if (root== nullptr){ throw std::invalid_argument("the root is null");}
+    return {root};
 }
 
 OrgChart::preorder_iterator OrgChart::end_preorder() {
-    return OrgChart::preorder_iterator(nullptr);
+    if (root== nullptr){ throw std::invalid_argument("the root is null");}
+    return {nullptr};
 }
 
 /////////////////// ITERATOR ///////////////////
@@ -120,7 +125,7 @@ ostream &ariel::operator<<(ostream &os, const OrgChart::iterator &m) {
 }
 
 bool OrgChart::iterator::hasNext() {
-    return orgPtr->lChild!= nullptr || orgPtr->right!= nullptr || hasRCousing() || hasLNephew() || hasSonOfCousing();
+    return orgPtr->lChild!= nullptr || orgPtr->right!= nullptr || hasRCousing() || hasLNephew() || hasSonOfCousing() || hassonOfDadRCousing();
 }
 
 OrgChart::Node *OrgChart::iterator::getOrgPtr() const {
@@ -129,12 +134,12 @@ OrgChart::Node *OrgChart::iterator::getOrgPtr() const {
 
 OrgChart::Node *OrgChart::iterator::leftBro(OrgChart::Node *pNode) {
     Node *ptr=pNode;
-    while(ptr->left) {ptr=ptr->left;}
+    while(ptr->left!= nullptr) {ptr=ptr->left;}
     return ptr;
 }
 
 bool OrgChart::iterator::getNextCousing() {
-    if( orgPtr== nullptr || orgPtr->dad== nullptr) return false;
+    if( orgPtr== nullptr || orgPtr->dad== nullptr){ return false;}
     Node* d= this->orgPtr->dad;
 
     while(d->right!= nullptr){
@@ -148,11 +153,11 @@ bool OrgChart::iterator::getNextCousing() {
 }
 
 bool OrgChart::iterator::hasRCousing() {
-    if( orgPtr== nullptr || orgPtr->dad== nullptr) return false;
+    if( orgPtr== nullptr || orgPtr->dad== nullptr){ return false;}
     Node* d= this->orgPtr->dad;
 
     while(d->right!= nullptr){
-        if(d->right->lChild) {
+        if(d->right->lChild!= nullptr) {
             return true;
         }
         d=d->right;
@@ -161,11 +166,11 @@ bool OrgChart::iterator::hasRCousing() {
 }
 
 bool OrgChart::iterator::getNextNephew() {
-    if(this->orgPtr== nullptr || orgPtr->left== nullptr) return false;
+    if(this->orgPtr== nullptr || orgPtr->left== nullptr){ return false;}
 
     Node *ll = leftBro(this->orgPtr);
-    while (ll && ll!=orgPtr && ll->lChild == nullptr) { ll = ll->right; }
-    if (ll->lChild!= nullptr) {
+    while (ll!= nullptr && ll!=orgPtr && ll->lChild == nullptr) { ll = ll->right; }
+    if (ll!= nullptr && ll->lChild!= nullptr) {
         orgPtr=ll->lChild;
         return true;
     }
@@ -173,57 +178,53 @@ bool OrgChart::iterator::getNextNephew() {
 }
 
 bool OrgChart::iterator::hasLNephew() {
-    if(this->orgPtr== nullptr || orgPtr->left== nullptr) return false;
+    if(this->orgPtr== nullptr || orgPtr->left== nullptr){ return false;}
 
     Node *ll = leftBro(this->orgPtr);
-    while (ll && ll!=orgPtr && ll->lChild == nullptr) { ll = ll->right; }
-    if (ll->lChild!= nullptr) {
-        return true;
-    }
-    return false;
+    while (ll!= nullptr && ll!=orgPtr && ll->lChild == nullptr) { ll = ll->right; }
+    return ll!= nullptr && ll->lChild!= nullptr;
+
 }
 
 string &OrgChart::iterator::operator*() const {
     return orgPtr->name;
 }
 
-const OrgChart::iterator OrgChart::iterator::operator++() {
+OrgChart::iterator OrgChart::iterator::operator++() {
     iterator t = *this;
     if (orgPtr != nullptr) {
-        if (orgPtr->right) {
+        if (orgPtr->right!= nullptr) {
             this->orgPtr = orgPtr->right;
+            return t;
         }
-        else if (getNextCousing()){return t;}
-        else if(getNextNephew()) {return t;}
-        else if(sonOfLCousing()){return *this;}
-        else if(orgPtr->lChild){
+        if (getNextCousing()){return t;}
+        if(sonOfLCousing()) {return t;}
+        if(getNextNephew()){return t;}
+        if(sonOfDadRCousing()){return t;}
+        if(orgPtr->lChild!= nullptr){
             this->orgPtr=orgPtr->lChild;
             return t;
         }
-        else{
-            orgPtr= nullptr;
-            return t;
-        }
+        orgPtr= nullptr;
     }
     return t;
 }
 
 OrgChart::iterator OrgChart::iterator::operator++(int) {
     if (orgPtr != nullptr) {
-        if (orgPtr->right) {
+        if (orgPtr->right!= nullptr) {
             this->orgPtr = orgPtr->right;
+            return *this;
         }
-        else if (getNextCousing()){return *this;}
-        else if(getNextNephew()) {return *this;}
-        else if(sonOfLCousing()){return *this;}
-        else if(orgPtr->lChild){
+        if (getNextCousing()){return *this;}
+        if(sonOfLCousing()) {return *this;}
+        if(getNextNephew()){return *this;}
+        if(sonOfDadRCousing()){return *this;}
+        if(orgPtr->lChild!= nullptr){
             this->orgPtr=orgPtr->lChild;
             return *this;
         }
-        else{
-            orgPtr= nullptr;
-            return *this;
-        }
+        orgPtr= nullptr;
     }
     return *this;
 }
@@ -241,13 +242,13 @@ string *OrgChart::iterator::operator->() const {
 }
 
 bool OrgChart::iterator::sonOfLCousing() {
-    if (orgPtr && orgPtr->dad && orgPtr->dad->dad && orgPtr->dad->dad->lChild && orgPtr->dad->dad->lChild->lChild) {
+    if (orgPtr!= nullptr && orgPtr->dad!= nullptr && orgPtr->dad->dad!= nullptr && orgPtr->dad->dad->lChild!= nullptr && orgPtr->dad->dad->lChild->lChild!= nullptr) {
         Node *n = orgPtr->dad->dad->lChild->lChild;
 
-        while (n && n->lChild == nullptr) {
+        while (n!= nullptr && n->lChild == nullptr) {
             n = n->right;
         }
-        if (n && n->lChild) {
+        if (n!= nullptr && n->lChild!= nullptr) {
             orgPtr = n->lChild;
             return true;
         }
@@ -257,17 +258,29 @@ bool OrgChart::iterator::sonOfLCousing() {
 
 bool OrgChart::iterator::hasSonOfCousing() {
     if (this->orgPtr == nullptr) { return false; }
-    if (orgPtr->dad && orgPtr->dad->dad && orgPtr->dad->dad->lChild && orgPtr->dad->dad->lChild->lChild) {
+    if (orgPtr->dad!= nullptr && orgPtr->dad->dad!= nullptr && orgPtr->dad->dad->lChild!= nullptr && orgPtr->dad->dad->lChild->lChild!= nullptr) {
         Node *n = orgPtr->dad->dad->lChild->lChild;
 
-        while (n && n->lChild == nullptr) {
+        while (n!= nullptr && n->lChild == nullptr) {
             n = n->right;
         }
-        if (n && n->lChild) {
+        if (n!= nullptr && n->lChild!= nullptr) {
             return true;
         }
     }
     return false;
+}
+
+bool OrgChart::iterator::sonOfDadRCousing() {
+    if (this->getOrgPtr()!= nullptr && this->getOrgPtr()->dad!= nullptr && orgPtr->dad->getNextSonOfRCousing()!= nullptr){
+        orgPtr=orgPtr->dad->getNextSonOfRCousing();
+        return true;
+    }
+    return false;
+}
+
+bool OrgChart::iterator::hassonOfDadRCousing() {
+    return this->getOrgPtr()!= nullptr && this->getOrgPtr()->dad!= nullptr && orgPtr->dad->getNextSonOfRCousing()!= nullptr;
 }
 
 /////////////////// REVERSE ITERATOR ///////////////////
@@ -280,22 +293,13 @@ string &OrgChart::reverse_iterator::operator*() const {
     return this->orgPtr->name;
 }
 
-OrgChart::Node *OrgChart::reverse_iterator::leftBro(OrgChart::Node *pNode) {
-    Node *ptr=pNode;
-    while(ptr->left) {ptr=ptr->left;}
-    return ptr;
-}
-
-bool OrgChart::reverse_iterator::hasNext() {
-    return this->orgPtr->right || this->orgPtr->dad || hasRCousing();
-}
 
 bool OrgChart::reverse_iterator::hasRCousing() {
-    if( orgPtr== nullptr || orgPtr->dad== nullptr) return false;
+    if( orgPtr== nullptr || orgPtr->dad== nullptr) {return false;}
     Node* d= this->orgPtr->dad;
 
     while(d->right!= nullptr){
-        if(d->right->lChild) {
+        if(d->right->lChild!= nullptr) {
             return true;
         }
         d=d->right;
@@ -304,7 +308,7 @@ bool OrgChart::reverse_iterator::hasRCousing() {
 }
 
 bool OrgChart::reverse_iterator::getNextRCousing() {
-    if( orgPtr== nullptr || orgPtr->dad== nullptr) return false;
+    if( orgPtr== nullptr || orgPtr->dad== nullptr) {return false;}
     Node* d= this->orgPtr->dad;
 
     while(d->right!= nullptr){
@@ -317,20 +321,18 @@ bool OrgChart::reverse_iterator::getNextRCousing() {
     return false;
 }
 
-const OrgChart::reverse_iterator OrgChart::reverse_iterator::operator++(int) {
+OrgChart::reverse_iterator OrgChart::reverse_iterator::operator++(int) {
     if (orgPtr != nullptr) {
-        if (orgPtr->right) {
+        if (orgPtr->right!= nullptr) {
             this->orgPtr = orgPtr->right;
             return *this;
         }
-        else if (getNextRCousing()) { return *this; }
-        else if (orgPtr->dad!= nullptr) {
+        if (getNextRCousing()) { return *this; }
+        if(getNextRGrandpaGrandson()){return *this;}
+        if (orgPtr->dad!= nullptr) {
             Node *d = orgPtr->dad;
-            if (d->dad!= nullptr && d->dad->lChild!= nullptr) {
-                d = d->dad->lChild;
-            }
 
-            if(d->dad){
+            if(d->dad!= nullptr){
                 d=d->getNextLCousing();}
 
             this->orgPtr=d;
@@ -341,21 +343,22 @@ const OrgChart::reverse_iterator OrgChart::reverse_iterator::operator++(int) {
     return *this;
 }
 
-const OrgChart::reverse_iterator OrgChart::reverse_iterator::operator++() {
-    reverse_iterator t= *this;
+OrgChart::reverse_iterator OrgChart::reverse_iterator::operator++() {
     if (orgPtr != nullptr) {
-        if (orgPtr->right) {
+        reverse_iterator t= *this;
+        if (orgPtr->right!= nullptr) {
             this->orgPtr = orgPtr->right;
             return t;
         }
-        else if (getNextRCousing()) { return t; }
-        else if (orgPtr->dad!= nullptr) {
+        if (getNextRCousing()) { return t; }
+        if(getNextRGrandpaGrandson()){return t;}
+        if (orgPtr->dad!= nullptr) {
             Node *d = orgPtr->dad;
             if (d->dad!= nullptr && d->dad->lChild!= nullptr) {
                 d = d->dad->lChild;
             }
 
-            if(d->dad){
+            if(d->dad!= nullptr){
             d=d->getNextLCousing();}
 
             this->orgPtr=d;
@@ -363,7 +366,7 @@ const OrgChart::reverse_iterator OrgChart::reverse_iterator::operator++() {
         }
     }
     orgPtr = nullptr;
-    return t;
+    return *this;
 }
 
 bool OrgChart::reverse_iterator::operator!=(const OrgChart::reverse_iterator &rhs) const {
@@ -378,17 +381,53 @@ string *OrgChart::reverse_iterator::operator->() const {
     return &(orgPtr->name);
 }
 
+bool OrgChart::reverse_iterator::getNextRGrandpaGrandson() {
+    if(orgPtr->dad== nullptr) {return false;}
+
+    Node* n=orgPtr->dad->getNextSonOfRCousing();
+    if(n!= nullptr){
+        orgPtr=n;
+        return true;
+    }
+
+    return false;
+}
+
+bool OrgChart::reverse_iterator::hasNextRGrandpaGrandson() {
+    if(orgPtr->dad== nullptr) {return false;}
+    Node* n=orgPtr->dad->getNextSonOfRCousing();
+    return n!= nullptr;
+}
+
 /////////////// NODE /////////////////
 
 OrgChart::Node *OrgChart::Node::getNextLCousing() {
     if(dad == nullptr) {return nullptr;}
     Node* d= dad;
-    if(d->dad && d->dad->lChild && d->dad->lChild->lChild){
+    if(d->dad!= nullptr && d->dad->lChild!= nullptr && d->dad->lChild->lChild!= nullptr){
         d= d->dad->lChild->lChild;
         return d;
     }
     return this;
 }
+
+OrgChart::Node *OrgChart::Node::getNextSonOfRCousing() const {
+    if (dad== nullptr || dad->right== nullptr){return nullptr;}
+    Node* n=dad->right;
+    while(n!= nullptr){
+        if (n->lChild!= nullptr && n->lChild->lChild!= nullptr){
+            return n->lChild->lChild;
+        }
+        n=n->right;
+    }
+    return nullptr;
+}
+
+size_t OrgChart::Node::hight() const {
+    if(this->dad== nullptr){ return 0;}
+    return dad->hight()+1;
+}
+
 
 //////////////// PREORDER ITERATOR ///////////
 
@@ -400,26 +439,23 @@ string &OrgChart::preorder_iterator::operator*() const {
     return this->orgPtr->name;
 }
 
-bool OrgChart::preorder_iterator::hasNext() {
-    return this->orgPtr->lChild || orgPtr->right || hasRUncle();
-}
-
-const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++() {
+OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++() {
     preorder_iterator t= *this;
     if (orgPtr != nullptr) {
-        if (orgPtr->lChild) {
+        if (orgPtr->lChild!= nullptr) {
             this->orgPtr = orgPtr->lChild;
             return t;
-        } else if(orgPtr->right){
+        }
+        if(orgPtr->right!= nullptr){
             orgPtr=orgPtr->right;
             return t;
         }
-        else if (getNextRUncle()) { return t; }
-        else{
+        if (getNextRUncle()) { return t; }
+
          Node* d= orgPtr->dad;
 
-            while (d && d->dad){
-                if(d->dad->right ){
+            while (d!= nullptr && d->dad!= nullptr){
+                if(d->dad->right!= nullptr ){
                     orgPtr=d->dad->right;
                     return *this;
                 }
@@ -427,28 +463,29 @@ const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++() {
             }
             this->orgPtr= nullptr;
             return t;
-        }
+
         }
     this->orgPtr= nullptr;
     return t;
     }
 
 
-const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++(int) {
+OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++(int) {
     if (orgPtr != nullptr) {
-        if (orgPtr->lChild) {
+        if (orgPtr->lChild!= nullptr) {
             this->orgPtr = orgPtr->lChild;
             return *this;
-        } else if(orgPtr->right){
+        }
+        if(orgPtr->right!= nullptr){
             orgPtr=orgPtr->right;
             return *this;
         }
-        else if (getNextRUncle()) { return *this; }
-        else{
+        if (getNextRUncle()) { return *this; }
+
             Node* d= orgPtr->dad;
 
-            while (d && d->dad){
-                if(d->dad->right ){
+            while (d!= nullptr && d->dad!= nullptr){
+                if(d->dad->right!= nullptr ){
                     orgPtr=d->dad->right;
                     return *this;
                 }
@@ -456,7 +493,7 @@ const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++(int) {
             }
             this->orgPtr= nullptr;
             return *this;
-        }
+
     }
     this->orgPtr= nullptr;
     return *this;
@@ -464,15 +501,12 @@ const OrgChart::preorder_iterator OrgChart::preorder_iterator::operator++(int) {
 
 bool OrgChart::preorder_iterator::hasRUncle() {
     if (this->orgPtr== nullptr){ return false;}
-    if (orgPtr->dad && orgPtr->dad->right){
-        return true;
-    }
-    return false;
+    return orgPtr->dad!= nullptr && orgPtr->dad->right!= nullptr;
 }
 
 bool OrgChart::preorder_iterator::getNextRUncle() {
     if (this->orgPtr== nullptr){ return false;}
-    if (orgPtr->dad && orgPtr->dad->right){
+    if (orgPtr->dad!= nullptr && orgPtr->dad->right!= nullptr){
         orgPtr=orgPtr->dad->right;
         return true;
     }
