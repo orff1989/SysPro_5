@@ -15,6 +15,11 @@ namespace ariel {
 
         OrgChart() : root(nullptr) { }
 
+        OrgChart(OrgChart& o)  {
+            root= o.root;
+            *this=o;
+        }
+
         ~OrgChart() {
             vector<Node*> v;
             if (root!= nullptr) {
@@ -22,7 +27,7 @@ namespace ariel {
                     v.push_back(it.getOrgPtr());
                 }
                 for (size_t i = 0; i < v.size(); i++) {
-                    free(v.at(i));
+                    delete v.at(i);
                 }
             }
         }
@@ -168,8 +173,6 @@ namespace ariel {
             preorder_iterator operator++();
 
             preorder_iterator operator++(int);
-
-            bool operator==(const preorder_iterator &rhs) const;
 
             bool operator!=(const preorder_iterator &rhs) const;
 

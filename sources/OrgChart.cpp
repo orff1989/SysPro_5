@@ -118,6 +118,7 @@ OrgChart::preorder_iterator OrgChart::end_preorder() {
     return {nullptr};
 }
 
+
 /////////////////// ITERATOR ///////////////////
 
 ostream &ariel::operator<<(ostream &os, const OrgChart::iterator &m) {
@@ -524,3 +525,5 @@ ostream &ariel::operator<<(ostream &os, const OrgChart::preorder_iterator &m) {
 string *OrgChart::preorder_iterator::operator->() const {
     return &(orgPtr->name);
 }
+
+
