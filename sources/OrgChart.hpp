@@ -13,14 +13,11 @@ namespace ariel {
     class OrgChart {
     public:
 
-        OrgChart() : root(nullptr) { }
-
-        OrgChart(OrgChart& o)  {
-            root= o.root;
-            *this=o;
+        OrgChart(){
+            root= nullptr;
         }
 
-        ~OrgChart() {
+        ~OrgChart(){
             vector<Node*> v;
             if (root!= nullptr) {
                 for (auto it = this->begin_preorder(); it != this->end_preorder(); ++it) {
@@ -31,6 +28,10 @@ namespace ariel {
                 }
             }
         }
+        OrgChart(OrgChart& o)=default;
+        OrgChart(OrgChart&& o)=default;
+        OrgChart& operator =(const OrgChart& o)=default;
+        OrgChart & operator =(OrgChart&&)=default;
 
     private:
 
@@ -182,7 +183,6 @@ namespace ariel {
 
         };
 
-    public:
         OrgChart &add_root(const string &str);
 
         OrgChart &add_sub(const string &str1, const string &str2);

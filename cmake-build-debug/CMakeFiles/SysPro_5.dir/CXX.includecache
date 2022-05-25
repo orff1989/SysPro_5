@@ -13,6 +13,8 @@ stdexcept
 -
 iostream
 -
+vector
+../sources/vector
 
 C:/Users/orff1/CLionProjects/SysPro_5/Demo.cpp
 iostream
@@ -23,8 +25,6 @@ sstream
 -
 stdexcept
 -
-vector
-C:/Users/orff1/CLionProjects/SysPro_5/vector
 OrgChart.hpp
 C:/Users/orff1/CLionProjects/SysPro_5/OrgChart.hpp
 
@@ -37,10 +37,6 @@ string
 -
 sstream
 -
-
-C:/Users/orff1/CLionProjects/SysPro_5/TestCounter.cpp
-doctest.h
-C:/Users/orff1/CLionProjects/SysPro_5/doctest.h
 
 C:/Users/orff1/CLionProjects/SysPro_5/doctest.h
 iosfwd
@@ -135,4 +131,6 @@ stdexcept
 -
 iostream
 -
+vector
+C:/Users/orff1/CLionProjects/SysPro_5/sources/vector
 

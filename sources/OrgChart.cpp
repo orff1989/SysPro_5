@@ -8,6 +8,8 @@ using namespace ariel;
 
 ////////// ORGCHART /////////////
 
+
+
 OrgChart &OrgChart::add_root(const string &str) {
     if(root==nullptr) {
         this->root = new Node(str);
